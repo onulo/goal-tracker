@@ -2,11 +2,10 @@ package com.obit.goaltracker.rest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class RecordResponse {
+public class RecordRequest {
 
     BigDecimal value;
     LocalDate recordDate;

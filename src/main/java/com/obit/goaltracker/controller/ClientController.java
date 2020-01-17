@@ -1,10 +1,10 @@
 package com.obit.goaltracker.controller;
 
 import com.obit.goaltracker.mapper.GoalMapper;
+import com.obit.goaltracker.model.GoalBO;
 import com.obit.goaltracker.rest.GoalRequest;
 import com.obit.goaltracker.rest.GoalResponse;
 import com.obit.goaltracker.service.GoalService;
-import java.util.Collections;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(ControllerConstant.API_V_1)
-@CrossOrigin(ControllerConstant.CORS_ALLOWED_URL)
+@CrossOrigin({ControllerConstant.CORS_LOCAL_ALLOWED, ControllerConstant.CORS_PROD_ALLOWED})
 public class ClientController {
 
     private static final String GOALS_FOR_CLIENT_URL = "/clients/{clientUid}/goals";
@@ -32,13 +32,14 @@ public class ClientController {
     }
 
     @PostMapping(GOALS_FOR_CLIENT_URL)
-    public ResponseEntity<String> addGoal(@PathVariable String clientUid, @RequestBody GoalRequest request) {
-        final String goalUid = goalService.addGoal(clientUid, goalMapper.map(request));
-        return new ResponseEntity<>(goalUid, HttpStatus.CREATED);
+    public ResponseEntity<Void> createGoal(@PathVariable String clientUid, @RequestBody GoalRequest request) {
+        goalService.createGoal(clientUid, goalMapper.map(request));
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping(GOALS_FOR_CLIENT_URL)
     public ResponseEntity<List<GoalResponse>> getGoals(@PathVariable String clientUid) {
-        return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
+        final List<GoalBO> goals = goalService.getGoals(clientUid);
+        return new ResponseEntity<>(goalMapper.mapGoals(goals), HttpStatus.OK);
     }
 }

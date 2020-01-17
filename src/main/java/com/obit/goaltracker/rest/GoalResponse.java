@@ -1,5 +1,6 @@
 package com.obit.goaltracker.rest;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

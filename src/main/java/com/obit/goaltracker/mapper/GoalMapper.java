@@ -16,6 +16,7 @@ public interface GoalMapper {
 
     List<GoalBO> map(List<Goal> goals);
 
+
     List<GoalResponse> mapGoals(List<GoalBO> goals);
 
 }

@@ -1,60 +1,56 @@
 package com.obit.goaltracker.controller;
 
-import com.obit.goaltracker.mapper.GoalMapper;
-import com.obit.goaltracker.model.GoalBO;
-import com.obit.goaltracker.rest.GoalRequest;
-import com.obit.goaltracker.rest.GoalResponse;
+import com.obit.goaltracker.mapper.RecordMapper;
+import com.obit.goaltracker.model.RecordBO;
+import com.obit.goaltracker.rest.RecordRequest;
+import com.obit.goaltracker.rest.RecordResponse;
 import com.obit.goaltracker.service.GoalService;
+import com.obit.goaltracker.service.RecordService;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
 @RestController
-@CrossOrigin("http://localhost:4200")
+@RequestMapping(ControllerConstant.API_V_1)
+@CrossOrigin({ControllerConstant.CORS_LOCAL_ALLOWED, ControllerConstant.CORS_PROD_ALLOWED})
 public class GoalController {
 
-    private static final String CLIENT_PARAM = "/{clientId}";
-    private static final String GOAL_URL = "/goals" + CLIENT_PARAM;
+    private static final String RECORDS_FOR_GOAL_URL = "/goals/{goalUid}/records";
+    private static final String GOAL_URL = "/goals/{goalUid}";
 
+    private final RecordService recordService;
     private final GoalService goalService;
-    private final GoalMapper goalMapper;
+    private final RecordMapper recordMapper;
 
-    @Autowired
-    public GoalController(final GoalService goalService, final GoalMapper goalMapper) {
+    public GoalController(RecordService recordService, GoalService goalService, RecordMapper recordMapper) {
+        this.recordService = recordService;
         this.goalService = goalService;
-        this.goalMapper = goalMapper;
+        this.recordMapper = recordMapper;
     }
 
-    @PostMapping(GOAL_URL)
-    public ResponseEntity<Void> createGoal(@PathVariable String clientId, @RequestBody GoalRequest request) {
-        goalService.addGoal(clientId, goalMapper.map(request));
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    @PostMapping(RECORDS_FOR_GOAL_URL)
+    public ResponseEntity<String> createRecord(@PathVariable String goalUid, @RequestBody RecordRequest recordRequest) {
+        final String recordUid = recordService.createRecord(goalUid, recordMapper.map(recordRequest));
+        return new ResponseEntity<>(recordUid, HttpStatus.CREATED);
     }
 
-    @GetMapping(GOAL_URL)
-    public ResponseEntity<List<GoalResponse>> getGoal(@PathVariable String clientId) {
-        final List<GoalBO> goals = goalService.getGoals(clientId);
-        return new ResponseEntity<>(goalMapper.mapGoals(goals), HttpStatus.OK);
+    @GetMapping(RECORDS_FOR_GOAL_URL)
+    public ResponseEntity<List<RecordResponse>> findAllRecords(@PathVariable String goalUid) {
+        List<RecordBO> records = recordService.findRecords(goalUid);
+        return new ResponseEntity<>(recordMapper.mapRecords(records), HttpStatus.OK);
     }
 
-
-
-
-
-//    @CrossOrigin
-//    @PatchMapping("/goals/{uid}")
-//    public void addRecord(@PathVariable String uid, @RequestBody RecordResponse record) {
-//        goalResponse.getRecords().add(record);
-//        log.info("received request with param {} and body {}", uid, record);
-//    }
-
+    @DeleteMapping(GOAL_URL)
+    public ResponseEntity<Void> deleteGoal(@PathVariable String goalUid) {
+        goalService.removeGoal(goalUid);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

@@ -2,13 +2,16 @@ package com.obit.goaltracker.service.impl;
 
 import com.obit.goaltracker.entity.Client;
 import com.obit.goaltracker.entity.Goal;
+import com.obit.goaltracker.entity.Record;
 import com.obit.goaltracker.jpa.ClientRepository;
 import com.obit.goaltracker.jpa.GoalRepository;
+import com.obit.goaltracker.jpa.RecordRepository;
 import com.obit.goaltracker.mapper.GoalMapper;
 import com.obit.goaltracker.model.GoalBO;
 import com.obit.goaltracker.service.ClientService;
 import com.obit.goaltracker.service.GoalService;
 import java.util.List;
+import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,42 +21,47 @@ import org.springframework.stereotype.Service;
 public class GoalServiceImpl implements GoalService {
 
     private final ClientService clientService;
-    private final ClientRepository clientRepository;
     private final GoalRepository goalRepository;
     private final GoalMapper goalMapper;
+    private final RecordRepository recordRepository;
 
     @Autowired
     public GoalServiceImpl(ClientService clientService, ClientRepository clientRepository,
             GoalRepository goalRepository,
-            GoalMapper goalMapper) {
+            GoalMapper goalMapper, RecordRepository recordRepository) {
         this.clientService = clientService;
-        this.clientRepository = clientRepository;
         this.goalRepository = goalRepository;
         this.goalMapper = goalMapper;
+        this.recordRepository = recordRepository;
     }
 
     @Override
-    public String addGoal(String clientId, GoalBO goalBO) {
+    public String createGoal(String clientId, GoalBO goalBO) {
         final Client client = clientService.getOrCreateClient(clientId);
         final Goal goal = goalMapper.map(goalBO);
-
-        client.getGoals().add(goal);
-        clientRepository.save(client);
-
-        clientRepository.flush();
-        log.info("Goal {} successfully created. ", goalBO);
-
-
-        return "ss";
+        goal.setClient(client);
+        goalRepository.save(goal);
+        log.info("Created goal: {}", goal);
+        return goal.getUid();
     }
-
 
     @Override
     public List<GoalBO> getGoals(String clientId) {
-        final Client client = clientService.getOrCreateClient(clientId);
-        List<Goal> goals = client.getGoals();
+        List<Goal> goals = goalRepository.findByClientUid(clientId);
+        //TODO refactor to jpa relation
+
+        goals.forEach(g -> {
+            List<Record> records = recordRepository.findByGoalUid(g.getUid());
+            g.setRecords(records);
+        });
+
         return goalMapper.map(goals);
     }
 
-
+    @Override
+    @Transactional
+    public void removeGoal(String goalUid) {
+        recordRepository.deleteAllByGoalUid(goalUid);
+        goalRepository.deleteById(goalUid);
+    }
 }
