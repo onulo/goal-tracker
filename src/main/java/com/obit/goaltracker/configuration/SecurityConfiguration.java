@@ -8,19 +8,17 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 @Configuration
 @EnableWebSecurity
+@Profile("!dev")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable();
-//        http.antMatcher("h2-console").anonymous().and()
-        http
-                .authorizeRequests()
-                .anyRequest().authenticated()
+        http.authorizeRequests()
+                .anyRequest()
+                .authenticated()
                 .and()
-                .antMatcher("h2-console").anonymous()
-                .and()
-                .oauth2ResourceServer().jwt();
+                .oauth2ResourceServer()
+                .jwt();
     }
 }
 
