@@ -25,6 +25,8 @@ public class GoalController {
 
     private static final String RECORDS_FOR_GOAL_URL = "/goals/{goalUid}/records";
     private static final String GOAL_URL = "/goals/{goalUid}";
+    private static final String RECORD_URL = "/goals/{goalUid}/records/{recordUid}";
+
 
     private final RecordService recordService;
     private final GoalService goalService;
@@ -37,9 +39,15 @@ public class GoalController {
     }
 
     @PostMapping(RECORDS_FOR_GOAL_URL)
-    public ResponseEntity<String> createRecord(@PathVariable String goalUid, @RequestBody RecordRequest recordRequest) {
-        final String recordUid = recordService.createRecord(goalUid, recordMapper.map(recordRequest));
-        return new ResponseEntity<>(recordUid, HttpStatus.CREATED);
+    public ResponseEntity<RecordResponse> createRecord(@PathVariable String goalUid, @RequestBody RecordRequest recordRequest) {
+        final RecordBO record = recordService.createRecord(goalUid, recordMapper.map(recordRequest));
+        return new ResponseEntity<>(recordMapper.mapResponse(record), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping(RECORD_URL)
+    public ResponseEntity<Void> deleteRecord(@PathVariable String goalUid, @PathVariable String recordUid) {
+        recordService.deleteRecord(goalUid, recordUid);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping(RECORDS_FOR_GOAL_URL)

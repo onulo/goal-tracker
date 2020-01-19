@@ -1,10 +1,11 @@
-package com.obit.goaltracker.controller;
+package com.obit.goaltracker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.obit.goaltracker.rest.GoalRequest;
 import com.obit.goaltracker.rest.GoalResponse;
 import com.obit.goaltracker.rest.RecordRequest;
+import com.obit.goaltracker.rest.RecordResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -18,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-class GoalControllerTest {
+class GoalFlowIntegrationTest {
 
     private static final String DESCRIPTION = "description";
     private static final BigDecimal GOAL_VALUE = new BigDecimal("1.00");
@@ -27,6 +28,7 @@ class GoalControllerTest {
     private static final String CLIENT_UID = "clientUid";
     private static final String GOALS_FOR_CLIENT_URL = "/api/v1/clients/{clientUid}/goals";
     private static final String RECORDS_FOR_GOAL_URL = "/api/v1/goals/{goalUid}/records";
+    private static final String RECORD_URL = "/api/v1/goals/{goalUid}/records/{recordUid}";
     private static final BigDecimal RECORD_VALUE = new BigDecimal("12.40");
     private static final LocalDate RECORD_TIME_STAMP = LocalDate.of(2019, 12, 24);
 
@@ -62,10 +64,13 @@ class GoalControllerTest {
         final String goalUid = goalResponse.getUid();
 
         // create records for goal
-        ResponseEntity<String> createdRecordResponse = testRestTemplate
-                .postForEntity(RECORDS_FOR_GOAL_URL, createRecordRequest(), String.class, goalUid);
+        ResponseEntity<RecordResponse> createdRecordResponse = testRestTemplate
+                .postForEntity(RECORDS_FOR_GOAL_URL, createRecordRequest(), RecordResponse.class, goalUid);
         assertThat(createdRecordResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(createdRecordResponse.getBody()).isNotBlank();
+        assertThat(createdRecordResponse.getBody().getUid()).isNotBlank();
+        assertThat(createdRecordResponse.getBody().getRecordDate()).isEqualTo(RECORD_TIME_STAMP);
+        assertThat(createdRecordResponse.getBody().getValue()).isEqualTo(RECORD_VALUE);
+        final String recordUid = createdRecordResponse.getBody().getUid();
 
         // get goal and check if contains record
         final ResponseEntity<GoalResponse[]> response2 = testRestTemplate
@@ -73,10 +78,18 @@ class GoalControllerTest {
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response2.getBody()).hasSize(1);
         final GoalResponse goalWithRecordResponse = Objects.requireNonNull(response2.getBody())[0];
-
         assertThat(goalWithRecordResponse.getRecords()).hasSize(1);
+        assertThat(goalWithRecordResponse.getRecords().get(0).getUid()).isEqualTo(recordUid);
         assertThat(goalWithRecordResponse.getRecords().get(0).getRecordDate()).isEqualTo(RECORD_TIME_STAMP);
         assertThat(goalWithRecordResponse.getRecords().get(0).getValue()).isEqualTo(RECORD_VALUE);
+
+        //remove record
+        testRestTemplate.delete(RECORD_URL, goalUid, recordUid);
+
+        // get goal and check there should be no records
+        ResponseEntity<GoalResponse[]> resp = testRestTemplate.getForEntity(GOALS_FOR_CLIENT_URL, GoalResponse[].class, CLIENT_UID);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(Objects.requireNonNull(resp.getBody())[0].getRecords()).isEmpty();
     }
 
     private RecordRequest createRecordRequest() {

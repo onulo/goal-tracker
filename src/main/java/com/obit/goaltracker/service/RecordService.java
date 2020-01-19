@@ -5,8 +5,10 @@ import java.util.List;
 
 public interface RecordService {
 
-    String createRecord(String goalUid, RecordBO recordBO);
+    RecordBO createRecord(String goalUid, RecordBO recordBO);
 
     List<RecordBO> findRecords(String goalUid);
+
+    void deleteRecord(String goalUid, String recordUid);
 
 }

@@ -38,7 +38,7 @@ public class ClientController {
     }
 
     @GetMapping(GOALS_FOR_CLIENT_URL)
-    public ResponseEntity<List<GoalResponse>> getGoals(@PathVariable String clientUid) {
+    public ResponseEntity<List<GoalResponse>> findAllGoals(@PathVariable String clientUid) {
         final List<GoalBO> goals = goalService.getGoals(clientUid);
         return new ResponseEntity<>(goalMapper.mapGoals(goals), HttpStatus.OK);
     }

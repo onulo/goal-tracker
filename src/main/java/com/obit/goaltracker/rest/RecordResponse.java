@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class RecordResponse {
 
+    String uid;
     BigDecimal value;
     LocalDate recordDate;
 }

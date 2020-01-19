@@ -2,23 +2,23 @@ package com.obit.goaltracker.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.OneToMany;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
 @Data
 @Entity
 @NoArgsConstructor
-@ToString
 public class Goal {
 
     @Id
@@ -35,10 +35,17 @@ public class Goal {
     @JoinColumn(name = "clientId", nullable = false)
     private Client client;
 
-    //TODO refactor
 
-    @Transient
-    private List<Record> records;
+    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Record> records = new ArrayList<>();
 
+    public void addRecord(Record record) {
+        records.add(record);
+        record.setGoal(this);
+    }
 
+    public void removeRecord(Record record) {
+        records.remove(record);
+        record.setGoal(null);
+    }
 }

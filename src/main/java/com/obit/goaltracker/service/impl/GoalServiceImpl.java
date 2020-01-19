@@ -2,7 +2,6 @@ package com.obit.goaltracker.service.impl;
 
 import com.obit.goaltracker.entity.Client;
 import com.obit.goaltracker.entity.Goal;
-import com.obit.goaltracker.entity.Record;
 import com.obit.goaltracker.jpa.ClientRepository;
 import com.obit.goaltracker.jpa.GoalRepository;
 import com.obit.goaltracker.jpa.RecordRepository;
@@ -47,15 +46,9 @@ public class GoalServiceImpl implements GoalService {
 
     @Override
     public List<GoalBO> getGoals(String clientId) {
-        List<Goal> goals = goalRepository.findByClientUid(clientId);
-        //TODO refactor to jpa relation
-
-        goals.forEach(g -> {
-            List<Record> records = recordRepository.findByGoalUid(g.getUid());
-            g.setRecords(records);
-        });
-
-        return goalMapper.map(goals);
+        final List<GoalBO> goals = goalMapper.map(goalRepository.findByClientUid(clientId));
+        log.info("Found goals: {}", goals);
+        return goals;
     }
 
     @Override
@@ -63,5 +56,6 @@ public class GoalServiceImpl implements GoalService {
     public void removeGoal(String goalUid) {
         recordRepository.deleteAllByGoalUid(goalUid);
         goalRepository.deleteById(goalUid);
+        log.info("Goal with uid: {} removed!", goalUid);
     }
 }

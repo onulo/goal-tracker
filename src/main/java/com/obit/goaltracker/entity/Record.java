@@ -13,18 +13,20 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.ToString.Exclude;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = "goal")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString
 public class Record {
 
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @EqualsAndHashCode.Include
     private String uid;
 
     @Column(nullable = false)
@@ -33,7 +35,8 @@ public class Record {
     @Column(nullable = false)
     private LocalDate recordDate;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "recordId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "goalId", nullable = false)
+    @Exclude
     private Goal goal;
 }

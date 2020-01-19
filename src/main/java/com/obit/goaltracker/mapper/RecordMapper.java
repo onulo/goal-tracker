@@ -14,6 +14,10 @@ public interface RecordMapper {
 
     RecordBO map(RecordRequest recordRequest);
 
+    RecordBO map(Record record);
+
+    RecordResponse mapResponse(RecordBO recordBO);
+
     List<RecordBO> map(List<Record> records);
 
     List<RecordResponse> mapRecords(List<RecordBO> records);
