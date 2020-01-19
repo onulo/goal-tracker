@@ -8,13 +8,12 @@
         <version>2.2.2.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.obit</groupId>
     <artifactId>goal-tracker</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>goal-tracker</name>
     <description>Demo project for Spring Boot</description>
-
-
 
     <properties>
         <java.version>1.8</java.version>
@@ -36,40 +35,35 @@
             <artifactId>okta-spring-boot-starter</artifactId>
             <version>1.3.0</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct-jdk8 -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-jdk8</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
         </dependency>
-
-
-
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.14.0</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
